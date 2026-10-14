@@ -1,0 +1,5 @@
+.react-router
+build
+**/*.db*
+node_modules
+README.md

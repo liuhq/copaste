@@ -1,0 +1,43 @@
+{
+  "name": "copaste",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "drizzle:push": "drizzle-kit push",
+    "drizzle:generate": "drizzle-kit push",
+    "drizzle:migrate": "drizzle-kit push",
+    "sqlite": "sqlite3 -readonly copaste.db"
+  },
+  "dependencies": {
+    "@react-router/node": "^8.4.0",
+    "@react-router/serve": "^8.4.0",
+    "better-sqlite3": "^13.0.3",
+    "drizzle-orm": "1.0.0-rc.4",
+    "isbot": "^5.1.36",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router": "^8.4.0"
+  },
+  "devDependencies": {
+    "@react-router/dev": "^8.4.0",
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^22",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "drizzle-kit": "1.0.0-rc.4",
+    "oxfmt": "^0.72.0",
+    "oxlint": "^1.87.0",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.3"
+  }
+}
