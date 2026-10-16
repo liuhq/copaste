@@ -29,3 +29,7 @@ export function isOptionalString(value: unknown) {
 export function isNonEmptyString(value: unknown): value is string {
   return isString(value) && value.trim() !== ""
 }
+
+export function isPositiveInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0
+}
