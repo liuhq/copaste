@@ -3,11 +3,13 @@ import { dirname, resolve } from "node:path"
 
 import { drizzle } from "drizzle-orm/better-sqlite3"
 
+import { readEnv } from "~/lib/env.server"
+
 import { relations } from "./relations.server"
 
 export const DEFAULT_DB_FILE_NAME = "copaste.db"
 
-const dbFileName = resolve(process.env.DB_FILE_NAME ?? DEFAULT_DB_FILE_NAME)
+const dbFileName = resolve(readEnv("DB_FILE_NAME", DEFAULT_DB_FILE_NAME))
 
 const createDatabase = () => {
   mkdirSync(dirname(dbFileName), { recursive: true })
