@@ -19,13 +19,13 @@ const authCallbackPath = "/auth/callback"
 const redirectURI = new URL(authCallbackPath, appOrigin).href
 const scope = "openid profile email"
 
-export interface OIDCAuthorization {
+export type OIDCAuthorization = {
   url: URL
   state: string
   codeVerifier: string
 }
 
-export interface OIDCIdentity {
+export type OIDCIdentity = {
   issuer: string
   subject: string
   displayName?: string
