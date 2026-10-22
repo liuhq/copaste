@@ -3,7 +3,7 @@ import { redirect } from "react-router"
 import { createAuthorization } from "~/lib/auth/oidc.server"
 import { oidcSessionStorage } from "~/lib/auth/session.server"
 
-export async function loader() {
+export async function action() {
   const authorization = await createAuthorization()
 
   const oidcSession = await oidcSessionStorage.getSession()
