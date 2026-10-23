@@ -40,7 +40,7 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
   return (
     <>
       <Header {...loaderData} />
-      <main className="w-full p-4">
+      <main className="rounded bg-pure-white px-2 py-2 shadow">
         <Outlet />
       </main>
       <Footer />
