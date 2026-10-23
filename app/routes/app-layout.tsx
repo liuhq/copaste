@@ -40,7 +40,7 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
   return (
     <>
       <Header {...loaderData} />
-      <main>
+      <main className="w-full p-4">
         <Outlet />
       </main>
       <Footer />
