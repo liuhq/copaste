@@ -6,6 +6,7 @@ export default defineConfig({
   sortImports: true,
   sortTailwindcss: {
     stylesheet: "./app/app.css",
+    functions: ["tw"],
   },
   overrides: [
     {
