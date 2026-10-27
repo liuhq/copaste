@@ -38,12 +38,12 @@ export async function loader({
 
 export default function AppLayout({ loaderData }: Route.ComponentProps) {
   return (
-    <>
+    <div className="flex min-h-svh flex-col">
       <Header {...loaderData} />
-      <main className="rounded bg-pure-white px-2 py-2 shadow">
+      <main className="flex min-h-0 flex-1 flex-col rounded bg-pure-white px-2 py-2 shadow">
         <Outlet />
       </main>
       <Footer />
-    </>
+    </div>
   )
 }
