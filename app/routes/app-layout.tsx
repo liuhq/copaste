@@ -1,9 +1,10 @@
-import { Outlet } from "react-router"
+import { Outlet, useLocation } from "react-router"
 
 import Footer from "~/components/footer"
 import Header from "~/components/header"
 import { findByID } from "~/db/dao/users.server"
 import { authSessionStorage } from "~/lib/auth/session.server"
+import tw from "~/lib/tw"
 
 import type { Route } from "./+types/app-layout"
 
@@ -37,8 +38,12 @@ export async function loader({
 }
 
 export default function AppLayout({ loaderData }: Route.ComponentProps) {
+  const pathname = useLocation().pathname
+  const isEdit = pathname === "/w" || pathname.startsWith("/w/")
+  const wrapperStyle = tw("flex flex-col", isEdit ? "h-dvh overflow-hidden" : "min-h-svh")
+
   return (
-    <div className="flex min-h-svh flex-col">
+    <div className={wrapperStyle}>
       <Header {...loaderData} />
       <main className="flex min-h-0 flex-1 flex-col rounded bg-pure-white px-2 py-2 shadow">
         <Outlet />
