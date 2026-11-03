@@ -8,7 +8,7 @@ import { pastesTable } from "../schema.server"
 type Paste = typeof pastesTable.$inferSelect
 type PasteMut = typeof pastesTable.$inferInsert
 
-export async function create(input: Omit<PasteMut, "ID" | "createdAt" | "updatedAt">) {
+export async function createPaste(input: Omit<PasteMut, "ID" | "createdAt" | "updatedAt">) {
   const [paste] = await db.insert(pastesTable).values(input).returning()
 
   if (!paste) {
