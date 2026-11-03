@@ -1,6 +1,6 @@
 import { redirect } from "react-router"
 
-import { upsertByOIDCIdentity } from "~/db/dao/users.server"
+import { upsertUserByOIDCIdentity } from "~/db/dao/users.server"
 import { verifyAuthorization } from "~/lib/auth/oidc.server"
 import { oidcSessionStorage, authSessionStorage } from "~/lib/auth/session.server"
 
@@ -21,7 +21,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     state,
   })
 
-  const authUser = await upsertByOIDCIdentity({
+  const authUser = await upsertUserByOIDCIdentity({
     oidcIssuer: oidcUser.issuer,
     oidcSubject: oidcUser.subject,
     displayName: oidcUser.displayName,

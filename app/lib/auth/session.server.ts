@@ -39,3 +39,15 @@ export const authSessionStorage = createCookieSessionStorage<AuthSessionData>({
     secure: true,
   },
 })
+
+export async function getSessionUserID(request: Request): Promise<number | null> {
+  const authSession = await authSessionStorage.getSession(request.headers.get("Cookie"))
+
+  const userID = authSession.get("userID")
+
+  if (userID === undefined) {
+    return null
+  }
+
+  return userID
+}

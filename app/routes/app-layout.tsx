@@ -2,8 +2,7 @@ import { Outlet, useLocation } from "react-router"
 
 import Footer from "~/components/footer"
 import Header from "~/components/header"
-import { findByID } from "~/db/dao/users.server"
-import { authSessionStorage } from "~/lib/auth/session.server"
+import { getCurrentUser } from "~/lib/auth/user.server"
 import tw from "~/lib/tw"
 
 import type { Route } from "./+types/app-layout"
@@ -13,19 +12,7 @@ export async function loader({
 }: Route.LoaderArgs): Promise<
   { authentication: true; displayName: string | null } | { authentication: false }
 > {
-  const authSession = await authSessionStorage.getSession(request.headers.get("Cookie"))
-
-  if (!authSession.has("userID")) {
-    return { authentication: false }
-  }
-
-  const userID = authSession.get("userID")
-
-  if (userID === undefined) {
-    return { authentication: false }
-  }
-
-  const user = await findByID(userID)
+  const user = await getCurrentUser(request)
 
   if (!user) {
     return { authentication: false }

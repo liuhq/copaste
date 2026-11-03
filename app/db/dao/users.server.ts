@@ -4,7 +4,7 @@ import { usersTable } from "../schema.server"
 type User = typeof usersTable.$inferSelect
 type UserMut = typeof usersTable.$inferInsert
 
-export function findByID(ID: User["ID"]) {
+export function findUserByID(ID: User["ID"]) {
   return db.query.users.findFirst({
     where: {
       ID,
@@ -12,7 +12,19 @@ export function findByID(ID: User["ID"]) {
   })
 }
 
-export function findByOIDCIdentity(
+export function findUserSummaryByID(ID: User["ID"]) {
+  return db.query.users.findFirst({
+    where: {
+      ID,
+    },
+    columns: {
+      ID: true,
+      displayName: true,
+    },
+  })
+}
+
+export function findUserByOIDCIdentity(
   oidcIssuer: User["oidcIssuer"],
   oidcSubject: User["oidcSubject"],
 ) {
@@ -24,7 +36,7 @@ export function findByOIDCIdentity(
   })
 }
 
-export async function upsertByOIDCIdentity({
+export async function upsertUserByOIDCIdentity({
   oidcIssuer,
   oidcSubject,
   displayName,
