@@ -3,6 +3,7 @@ import { Form, redirect } from "react-router"
 
 import Intro from "~/components/app-index.intro"
 import Button from "~/components/button"
+import ErrorTip from "~/components/error-tip"
 import { isNonEmptyString } from "~/lib/predicate"
 
 import type { Route } from "./+types/app-index"
@@ -41,7 +42,7 @@ export default function AppIndex({ actionData }: Route.ComponentProps) {
             Search
           </Button>
         </div>
-        <span className="min-h-lh text-red">{actionData?.error ? actionData.error : ""}</span>
+        <ErrorTip text={actionData?.error ? actionData.error : ""} />
       </Form>
       <Intro />
     </div>
