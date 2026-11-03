@@ -1,4 +1,5 @@
 import { and, eq, gt, isNull, lte, or } from "drizzle-orm"
+import { nanoid } from "nanoid"
 
 import { isPositiveInteger } from "~/lib/predicate"
 
@@ -8,14 +9,29 @@ import { pastesTable } from "../schema.server"
 type Paste = typeof pastesTable.$inferSelect
 type PasteMut = typeof pastesTable.$inferInsert
 
-export async function createPaste(input: Omit<PasteMut, "ID" | "createdAt" | "updatedAt">) {
-  const [paste] = await db.insert(pastesTable).values(input).returning()
+export async function createPaste(
+  input: Omit<PasteMut, "ID" | "slug" | "createdAt" | "updatedAt">,
+) {
+  const maxAttempts = 5
+  let attempts = 0
 
-  if (!paste) {
-    throw new Error("Inserting paste returned no row")
+  while (attempts++ < maxAttempts) {
+    // oxlint-disable-next-line no-await-in-loop
+    const [paste] = await db
+      .insert(pastesTable)
+      .values({
+        ...input,
+        slug: nanoid(10),
+      })
+      .onConflictDoNothing({ target: pastesTable.slug })
+      .returning()
+
+    if (paste) {
+      return paste
+    }
   }
 
-  return paste
+  throw new Error(`Failed to create paste after ${maxAttempts} slug generation attempts`)
 }
 
 export async function findActiveBySlug(slug: Paste["slug"]) {
