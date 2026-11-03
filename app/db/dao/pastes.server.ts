@@ -34,7 +34,7 @@ export async function createPaste(
   throw new Error(`Failed to create paste after ${maxAttempts} slug generation attempts`)
 }
 
-export async function findActiveBySlug(slug: Paste["slug"]) {
+export async function findActivePasteBySlug(slug: Paste["slug"]) {
   const paste = await db.query.pastes.findFirst({
     where: {
       slug,
@@ -45,7 +45,7 @@ export async function findActiveBySlug(slug: Paste["slug"]) {
   return paste ?? null
 }
 
-export function listActiveByOwner({
+export function listActivePastesByOwner({
   ownerID,
   limit,
   offset,
@@ -76,8 +76,8 @@ export function listActiveByOwner({
   })
 }
 
-export async function updateByOwner(
-  ID: Paste["ID"],
+export async function updatePasteBySlugOwner(
+  slug: Paste["slug"],
   ownerID: Paste["ownerID"],
   patch: Partial<Pick<PasteMut, "title" | "language" | "content" | "expiresAt">>,
 ) {
@@ -86,7 +86,7 @@ export async function updateByOwner(
     .set(patch)
     .where(
       and(
-        eq(pastesTable.ID, ID),
+        eq(pastesTable.slug, slug),
         eq(pastesTable.ownerID, ownerID),
         or(isNull(pastesTable.expiresAt), gt(pastesTable.expiresAt, new Date())),
       ),
@@ -96,14 +96,14 @@ export async function updateByOwner(
   return paste ?? null
 }
 
-export async function deleteByOwner(ID: Paste["ID"], ownerID: Paste["ownerID"]) {
+export async function deletePasteByOwner(ID: Paste["ID"], ownerID: Paste["ownerID"]) {
   return await db
     .delete(pastesTable)
     .where(and(eq(pastesTable.ID, ID), eq(pastesTable.ownerID, ownerID)))
     .returning({ ID: pastesTable.ID })
 }
 
-export async function deleteExpired(before: Date, limit?: number) {
+export async function deleteExpiredPastes(before: Date, limit?: number) {
   if (limit !== undefined && (!Number.isSafeInteger(limit) || limit < 0)) {
     throw new RangeError("Invalid limit", { cause: limit })
   }
