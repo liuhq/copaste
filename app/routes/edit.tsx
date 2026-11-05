@@ -1,9 +1,267 @@
-import Editor from "~/components/editor"
+import { RiMore2Fill } from "@remixicon/react"
+import { useEffect, useRef, useState } from "react"
+import { Form, redirect } from "react-router"
 
-export default function Edit() {
+import Button from "~/components/button"
+import Editor from "~/components/editor"
+import ErrorTip from "~/components/error-tip"
+import { createPaste, findActivePasteBySlug, updatePasteBySlugOwner } from "~/db/dao/pastes.server"
+import { getSessionUserID } from "~/lib/auth/session.server"
+import tw from "~/lib/tw"
+
+import type { Route } from "./+types/edit"
+
+const newEditName = "__copaste_editor_new"
+const editorName = "__copaste_editor_content"
+const langName = "__copaste_editor_language"
+const expiresAtName = "__copaste_editor_expires_at"
+const titleName = "__copaste_editor_title"
+
+const durations = {
+  keep: {
+    name: "Keep",
+    value: 0,
+  },
+  never: {
+    name: "Never",
+    value: 0,
+  },
+  "15m": {
+    name: "15 minutes",
+    value: 1_000 * 60 * 15,
+  },
+  "1h": {
+    name: "1 hour",
+    value: 1_000 * 60 * 60,
+  },
+  "1d": {
+    name: "1 day",
+    value: 1_000 * 60 * 60 * 24,
+  },
+  "7d": {
+    name: "7 day",
+    value: 1_000 * 60 * 60 * 24 * 7,
+  },
+  "30d": {
+    name: "30 day",
+    value: 1_000 * 60 * 60 * 24 * 30,
+  },
+} as const
+
+type Duration = keyof typeof durations
+
+const getExpiresAtDate = (duration: Duration): { expiresAt: Date | null } | {} => {
+  if (duration === "keep") {
+    return {}
+  }
+
+  if (duration === "never") {
+    return { expiresAt: null }
+  }
+
+  return {
+    expiresAt: new Date(Date.now() + durations[duration].value),
+  }
+}
+
+const isExpiresAtValue = (value: unknown): value is Duration => {
+  return typeof value === "string" && Object.hasOwn(durations, value)
+}
+
+export async function loader({ request, params: { publicID } }: Route.LoaderArgs) {
+  const userID = await getSessionUserID(request)
+  if (userID === null) {
+    throw redirect("/")
+  }
+
+  if (publicID) {
+    const paste = await findActivePasteBySlug(publicID)
+    if (paste) {
+      const { content, expiresAt, language, title, slug } = paste
+      return { content, expiresAt, language, title, slug }
+    } else {
+      throw redirect("/w")
+    }
+  }
+
+  return
+}
+
+export async function action({
+  request,
+  params: { publicID },
+}: Route.ActionArgs): Promise<{ type: "auth" | "paste"; message: string } | Response> {
+  const userID = await getSessionUserID(request)
+
+  if (userID === null) {
+    return { type: "auth", message: "Unauthorized" }
+  }
+
+  const formData = await request.formData()
+  const content = formData.get(editorName)?.toString()
+  const language = formData.get(langName)?.toString()
+  const expiresAt = formData.get(expiresAtName)?.toString()
+  const title = formData.get(titleName)?.toString()
+
+  if (!content || content.trim() === "") {
+    return { type: "paste", message: "Content cannot be empty." }
+  }
+
+  if (!isExpiresAtValue(expiresAt)) {
+    return { type: "paste", message: "Invalid expires_at value" }
+  }
+
+  let paste = null
+
+  if (publicID) {
+    paste = await updatePasteBySlugOwner(publicID, userID, {
+      content,
+      language,
+      title,
+      ...getExpiresAtDate(expiresAt),
+    })
+  } else {
+    paste = await createPaste({
+      ownerID: userID,
+      content,
+      language,
+      title,
+      ...getExpiresAtDate(expiresAt),
+    })
+  }
+
+  return redirect(`/p/${paste.slug}`)
+}
+
+interface SelectProps extends React.ComponentPropsWithoutRef<"select"> {
+  text: string
+}
+
+const Select = ({ text, children, id, ...props }: SelectProps) => {
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <Editor name="editor" />
+    <div>
+      <label htmlFor={id} className="mr-2">
+        {text}
+      </label>
+      <select id={id} {...props} className="rounded bg-white p-1">
+        {children}
+      </select>
     </div>
+  )
+}
+
+interface BarProps {
+  isNew?: boolean
+  language?: string | null
+  expiresAt?: Date | null
+  title?: string | null
+}
+
+const Bar = ({ language, expiresAt, title, isNew }: BarProps) => {
+  const [open, setOpen] = useState(false)
+  const optionsRef = useRef<HTMLDivElement>(null)
+
+  const isNever = expiresAt === null
+
+  const optionsPanelStyle = tw(
+    "absolute top-full left-0 z-10 mt-2 w-max flex-col gap-2 bg-pure-white p-2 shadow-md",
+    "md:static md:mt-0 md:flex md:flex-row md:items-center md:bg-transparent md:p-0 md:shadow-none",
+    open ? "flex" : "hidden",
+  )
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    const onPointerDown = (evt: PointerEvent) => {
+      if (!optionsRef.current?.contains(evt.target as Node)) {
+        setOpen(false)
+      }
+    }
+    const onKeyDown = (evt: KeyboardEvent) => {
+      if (evt.code === "Escape") {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener("pointerdown", onPointerDown)
+    document.addEventListener("keydown", onKeyDown)
+
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown)
+      document.removeEventListener("keydown", onKeyDown)
+    }
+  }, [open])
+
+  return (
+    <div className="flex justify-between gap-2">
+      <div ref={optionsRef} className="relative flex shrink-0">
+        <button
+          type="button"
+          className="rounded pr-1.5 pl-1.5 active:bg-white md:hidden"
+          onClick={() => setOpen((prev) => !prev)}
+        >
+          <RiMore2Fill size={20} />
+        </button>
+        <div className={optionsPanelStyle}>
+          <Select
+            text="Language"
+            id={langName}
+            name={langName}
+            defaultValue={language ?? "plaintext"}
+          >
+            <option value="plaintext">Plain text</option>
+            <option value="javascript">JavaScript</option>
+          </Select>
+          <Select text="Expires at" id={expiresAtName} name={expiresAtName}>
+            {!isNew && expiresAt !== undefined && (
+              <option value="keep">
+                {isNever ? "Never" : expiresAt.toLocaleString(undefined, { hour12: false })}
+              </option>
+            )}
+            {Object.keys(durations)
+              .filter((k) => k !== "keep")
+              .map((k) => (
+                <option value={k} key={k} disabled={k === "never"}>
+                  {durations[k as Duration].name}
+                </option>
+              ))}
+          </Select>
+        </div>
+      </div>
+      <div className="flex min-w-1/3 gap-2 transition-all md:gap-4">
+        <input
+          type="text"
+          name={titleName}
+          defaultValue={title ?? ""}
+          placeholder="(no title)"
+          className="min-w-0 flex-1 bg-white px-2 transition-all"
+        />
+        <Button variant="primary" type="submit">
+          {isNew ? "Create" : "Update"}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+export default function Edit({ loaderData, actionData }: Route.ComponentProps) {
+  return (
+    <Form
+      method="post"
+      className="flex min-h-0 flex-1 flex-col"
+      key={loaderData?.slug ?? newEditName}
+    >
+      <Bar
+        language={loaderData?.language}
+        expiresAt={loaderData?.expiresAt}
+        title={loaderData?.title}
+        isNew={!loaderData}
+      />
+      {actionData?.type && actionData.type === "paste" && <ErrorTip text={actionData.message} />}
+      <div className="mt-2 border-b border-white" />
+      <Editor name={editorName} defaultValue={loaderData?.content} />
+    </Form>
   )
 }

@@ -10,7 +10,7 @@ const Gutter = ({ lineCount }: GutterProps) => {
   return (
     <div
       aria-hidden="true"
-      className="sticky left-0 h-max min-w-[calc(2ch+0.5rem+2px)] shrink-0 border-r-2 border-r-white bg-pure-white pr-2 text-end select-none"
+      className="sticky left-0 min-h-max min-w-[calc(2ch+0.5rem+2px)] shrink-0 border-r-2 border-r-white bg-pure-white pr-2 text-end select-none"
     >
       {Array.from({ length: lineCount }, (_, i) => (
         <div key={i}>{i + 1}</div>
@@ -44,7 +44,7 @@ export default function Editor({ name, defaultValue = "" }: EditorProps) {
 
   return (
     <div
-      className="flex min-h-0 min-w-0 flex-1 overflow-auto font-mono text-base/8"
+      className="flex min-h-0 min-w-0 flex-1 gap-1 overflow-auto font-mono text-base/8"
       style={paddingScroll}
     >
       <Gutter lineCount={lineCount} />
