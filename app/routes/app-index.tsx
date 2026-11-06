@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react"
 import { Form, redirect } from "react-router"
 
 import Intro from "~/components/app-index.intro"
-import Button from "~/components/button"
+import { Button } from "~/components/button"
 import ErrorTip from "~/components/error-tip"
 import { isNonEmptyString } from "~/lib/predicate"
 
@@ -39,7 +39,7 @@ export default function AppIndex({ actionData }: Route.ComponentProps) {
             placeholder="Enter the paste id..."
           />
           <Button variant="primary" type="submit">
-            Search
+            View
           </Button>
         </div>
         <ErrorTip text={actionData?.error ? actionData.error : ""} />

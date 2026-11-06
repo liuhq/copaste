@@ -1,6 +1,6 @@
 import { Link, useFetcher } from "react-router"
 
-import Button from "~/components/button"
+import { Button } from "~/components/button"
 
 const DEFAULT_NAME = "copaste user"
 
