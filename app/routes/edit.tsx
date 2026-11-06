@@ -2,20 +2,21 @@ import { RiMore2Fill } from "@remixicon/react"
 import { useEffect, useRef, useState } from "react"
 import { Form, redirect } from "react-router"
 
-import Button from "~/components/button"
+import { Button } from "~/components/button"
 import Editor from "~/components/editor"
 import ErrorTip from "~/components/error-tip"
 import { createPaste, findActivePasteBySlug, updatePasteBySlugOwner } from "~/db/dao/pastes.server"
 import { getSessionUserID } from "~/lib/auth/session.server"
+import { isSupportedLanguage, supportedLanguages } from "~/lib/highlight.server"
 import tw from "~/lib/tw"
 
 import type { Route } from "./+types/edit"
 
-const newEditName = "__copaste_editor_new"
-const editorName = "__copaste_editor_content"
-const langName = "__copaste_editor_language"
-const expiresAtName = "__copaste_editor_expires_at"
-const titleName = "__copaste_editor_title"
+const newEditName = "copaste_edit_new"
+const contentName = "copaste_edit_content"
+const languageName = "copaste_edit_language"
+const expiresAtName = "copaste_edit_expires_at"
+const titleName = "copaste_edit_title"
 
 const durations = {
   keep: {
@@ -70,21 +71,30 @@ const isExpiresAtValue = (value: unknown): value is Duration => {
 
 export async function loader({ request, params: { publicID } }: Route.LoaderArgs) {
   const userID = await getSessionUserID(request)
+
   if (userID === null) {
     throw redirect("/")
   }
 
   if (publicID) {
     const paste = await findActivePasteBySlug(publicID)
-    if (paste) {
-      const { content, expiresAt, language, title, slug } = paste
-      return { content, expiresAt, language, title, slug }
-    } else {
+
+    if (!paste) {
       throw redirect("/w")
+    }
+
+    const { content, expiresAt, language, title, slug } = paste
+
+    return {
+      paste: { content, expiresAt, language, title, slug },
+      supportedLanguages,
     }
   }
 
-  return
+  return {
+    paste: null,
+    supportedLanguages,
+  }
 }
 
 export async function action({
@@ -98,8 +108,8 @@ export async function action({
   }
 
   const formData = await request.formData()
-  const content = formData.get(editorName)?.toString()
-  const language = formData.get(langName)?.toString()
+  const content = formData.get(contentName)?.toString()
+  const language = formData.get(languageName)?.toString()
   const expiresAt = formData.get(expiresAtName)?.toString()
   const title = formData.get(titleName)?.toString()
 
@@ -107,8 +117,12 @@ export async function action({
     return { type: "paste", message: "Content cannot be empty." }
   }
 
+  if (!isSupportedLanguage(language)) {
+    return { type: "paste", message: "Invalid language" }
+  }
+
   if (!isExpiresAtValue(expiresAt)) {
-    return { type: "paste", message: "Invalid expires_at value" }
+    return { type: "paste", message: "Invalid expires value" }
   }
 
   let paste = null
@@ -137,13 +151,13 @@ interface SelectProps extends React.ComponentPropsWithoutRef<"select"> {
   text: string
 }
 
-const Select = ({ text, children, id, ...props }: SelectProps) => {
+const Select = ({ text, children, id, className, ...props }: SelectProps) => {
   return (
     <div>
       <label htmlFor={id} className="mr-2">
         {text}
       </label>
-      <select id={id} {...props} className="rounded bg-white p-1">
+      <select id={id} {...props} className={tw("rounded bg-white p-1", className)}>
         {children}
       </select>
     </div>
@@ -155,9 +169,10 @@ interface BarProps {
   language?: string | null
   expiresAt?: Date | null
   title?: string | null
+  supportedLanguages: Route.ComponentProps["loaderData"]["supportedLanguages"]
 }
 
-const Bar = ({ language, expiresAt, title, isNew }: BarProps) => {
+const Bar = ({ language, expiresAt, title, ...props }: BarProps) => {
   const [open, setOpen] = useState(false)
   const optionsRef = useRef<HTMLDivElement>(null)
 
@@ -207,15 +222,19 @@ const Bar = ({ language, expiresAt, title, isNew }: BarProps) => {
         <div className={optionsPanelStyle}>
           <Select
             text="Language"
-            id={langName}
-            name={langName}
+            id={languageName}
+            name={languageName}
             defaultValue={language ?? "plaintext"}
+            className="w-40"
           >
-            <option value="plaintext">Plain text</option>
-            <option value="javascript">JavaScript</option>
+            {props.supportedLanguages.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name}
+              </option>
+            ))}
           </Select>
           <Select text="Expires at" id={expiresAtName} name={expiresAtName}>
-            {!isNew && expiresAt !== undefined && (
+            {!props.isNew && expiresAt !== undefined && (
               <option value="keep">
                 {isNever ? "Never" : expiresAt.toLocaleString(undefined, { hour12: false })}
               </option>
@@ -230,16 +249,16 @@ const Bar = ({ language, expiresAt, title, isNew }: BarProps) => {
           </Select>
         </div>
       </div>
-      <div className="flex min-w-1/3 gap-2 transition-all md:gap-4">
+      <div className="flex min-w-0 flex-1 justify-end gap-2 transition-all md:gap-4">
         <input
           type="text"
           name={titleName}
           defaultValue={title ?? ""}
           placeholder="(no title)"
-          className="min-w-0 flex-1 bg-white px-2 transition-all"
+          className="max-w-1/2 min-w-0 flex-1 bg-white px-2 transition-all"
         />
         <Button variant="primary" type="submit">
-          {isNew ? "Create" : "Update"}
+          {props.isNew ? "Create" : "Update"}
         </Button>
       </div>
     </div>
@@ -247,21 +266,20 @@ const Bar = ({ language, expiresAt, title, isNew }: BarProps) => {
 }
 
 export default function Edit({ loaderData, actionData }: Route.ComponentProps) {
+  const { paste } = loaderData
+
   return (
-    <Form
-      method="post"
-      className="flex min-h-0 flex-1 flex-col"
-      key={loaderData?.slug ?? newEditName}
-    >
+    <Form method="post" className="flex min-h-0 flex-1 flex-col" key={paste?.slug ?? newEditName}>
       <Bar
-        language={loaderData?.language}
-        expiresAt={loaderData?.expiresAt}
-        title={loaderData?.title}
-        isNew={!loaderData}
+        language={paste?.language}
+        expiresAt={paste?.expiresAt}
+        title={paste?.title}
+        isNew={!paste}
+        supportedLanguages={loaderData.supportedLanguages}
       />
       {actionData?.type && actionData.type === "paste" && <ErrorTip text={actionData.message} />}
       <div className="mt-2 border-b border-white" />
-      <Editor name={editorName} defaultValue={loaderData?.content} />
+      <Editor name={contentName} defaultValue={paste?.content} />
     </Form>
   )
 }
