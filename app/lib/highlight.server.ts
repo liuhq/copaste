@@ -1,7 +1,15 @@
 import { bundledLanguages, bundledLanguagesInfo, codeToHtml, type BundledLanguage } from "shiki"
 
+const textLanguage = {
+  id: "text",
+  name: "Text",
+}
+
 export function isSupportedLanguage(value: unknown): value is BundledLanguage {
-  return typeof value === "string" && Object.hasOwn(bundledLanguages, value)
+  return (
+    typeof value === "string" &&
+    (Object.hasOwn(bundledLanguages, value) || value === textLanguage.id)
+  )
 }
 
 export function highlightContent(content: string, lang: string | null) {
@@ -11,4 +19,7 @@ export function highlightContent(content: string, lang: string | null) {
   })
 }
 
-export const supportedLanguages = bundledLanguagesInfo.map((l) => ({ id: l.id, name: l.name }))
+export const supportedLanguages = [
+  textLanguage,
+  ...bundledLanguagesInfo.map((l) => ({ id: l.id, name: l.name })),
+]
