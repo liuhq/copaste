@@ -27,5 +27,5 @@ body {
 }
 
 body {
-  @apply px-16;
+  @apply px-2 transition-all md:px-16;
 }
