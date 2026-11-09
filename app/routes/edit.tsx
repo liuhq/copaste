@@ -69,15 +69,15 @@ const isExpiresAtValue = (value: unknown): value is Duration => {
   return typeof value === "string" && Object.hasOwn(durations, value)
 }
 
-export async function loader({ request, params: { publicID } }: Route.LoaderArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
   const userID = await getSessionUserID(request)
 
   if (userID === null) {
     throw redirect("/")
   }
 
-  if (publicID) {
-    const paste = await findActivePasteBySlug(publicID)
+  if (params.slug) {
+    const paste = await findActivePasteBySlug(params.slug)
 
     if (!paste) {
       throw redirect("/w")
@@ -99,7 +99,7 @@ export async function loader({ request, params: { publicID } }: Route.LoaderArgs
 
 export async function action({
   request,
-  params: { publicID },
+  params,
 }: Route.ActionArgs): Promise<{ type: "auth" | "paste"; message: string } | Response> {
   const userID = await getSessionUserID(request)
 
@@ -127,8 +127,8 @@ export async function action({
 
   let paste = null
 
-  if (publicID) {
-    paste = await updatePasteBySlugOwner(publicID, userID, {
+  if (params.slug) {
+    paste = await updatePasteBySlugOwner(params.slug, userID, {
       content,
       language,
       title,

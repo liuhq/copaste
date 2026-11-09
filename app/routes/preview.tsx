@@ -8,8 +8,8 @@ import { highlightContent, supportedLanguages } from "~/lib/highlight.server"
 
 import type { Route } from "./+types/preview"
 
-export async function loader({ params: { publicID } }: Route.LoaderArgs) {
-  const paste = await findActivePasteBySlug(publicID)
+export async function loader({ params }: Route.LoaderArgs) {
+  const paste = await findActivePasteBySlug(params.slug)
 
   if (!paste) {
     throw redirect("/")

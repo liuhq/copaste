@@ -10,7 +10,7 @@ export default [
       route("callback", "./routes/auth.callback.ts"),
     ]),
 
-    route("p/:publicID", "./routes/preview.tsx"),
-    route("w/:publicID?", "./routes/edit.tsx"),
+    route("p/:slug", "./routes/preview.tsx"),
+    route("w/:slug?", "./routes/edit.tsx"),
   ]),
 ] satisfies RouteConfig
