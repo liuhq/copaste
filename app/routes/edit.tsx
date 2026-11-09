@@ -242,7 +242,7 @@ const Bar = ({ language, expiresAt, title, ...props }: BarProps) => {
             {Object.keys(durations)
               .filter((k) => k !== "keep")
               .map((k) => (
-                <option value={k} key={k} disabled={k === "never"}>
+                <option value={k} key={k} disabled={!props.isNew && k === "never"}>
                   {durations[k as Duration].name}
                 </option>
               ))}
