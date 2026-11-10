@@ -96,11 +96,11 @@ export async function updatePasteBySlugOwner(
   return paste ?? null
 }
 
-export async function deletePasteByOwner(ID: Paste["ID"], ownerID: Paste["ownerID"]) {
+export async function deletePasteByOwner(slug: Paste["slug"], ownerID: Paste["ownerID"]) {
   return await db
     .delete(pastesTable)
-    .where(and(eq(pastesTable.ID, ID), eq(pastesTable.ownerID, ownerID)))
-    .returning({ ID: pastesTable.ID })
+    .where(and(eq(pastesTable.slug, slug), eq(pastesTable.ownerID, ownerID)))
+    .returning({ slug: pastesTable.slug })
 }
 
 export async function deleteExpiredPastes(before: Date, limit?: number) {
