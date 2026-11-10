@@ -2,11 +2,22 @@ import { useEffect, useRef } from "react"
 import { Form, redirect } from "react-router"
 
 import Intro from "~/components/app-index.intro"
-import { Button } from "~/components/button"
+import { Button, ButtonLink } from "~/components/button"
 import ErrorTip from "~/components/error-tip"
+import { getSessionUserID } from "~/lib/auth/session.server"
 import { isNonEmptyString } from "~/lib/predicate"
 
 import type { Route } from "./+types/app-index"
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const userID = await getSessionUserID(request)
+
+  if (userID === null) {
+    return { authentication: false }
+  }
+
+  return { authentication: true }
+}
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData()
@@ -19,7 +30,7 @@ export async function action({ request }: Route.ActionArgs) {
   return redirect(`/p/${encodeURIComponent(slug.trim())}`)
 }
 
-export default function AppIndex({ actionData }: Route.ComponentProps) {
+export default function AppIndex({ loaderData, actionData }: Route.ComponentProps) {
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
@@ -41,6 +52,15 @@ export default function AppIndex({ actionData }: Route.ComponentProps) {
           <Button variant="primary" type="submit">
             View
           </Button>
+          {loaderData.authentication && (
+            <ButtonLink
+              variant="secondary"
+              to="/w"
+              className="border-2 border-primary font-bold text-primary hover:bg-primary hover:text-pure-white"
+            >
+              Create a new paste
+            </ButtonLink>
+          )}
         </div>
         <ErrorTip text={actionData?.error ? actionData.error : ""} />
       </Form>
