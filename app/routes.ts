@@ -12,5 +12,6 @@ export default [
 
     route("p/:slug", "./routes/preview.tsx"),
     route("w/:slug?", "./routes/edit.tsx"),
+    route("list", "./routes/list.tsx"),
   ]),
 ] satisfies RouteConfig
