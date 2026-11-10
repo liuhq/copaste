@@ -104,6 +104,7 @@ export async function action({
   const userID = await getSessionUserID(request)
 
   if (userID === null) {
+    // TODO: use flash session to warn the auth is outdated
     return { type: "auth", message: "Unauthorized" }
   }
 
