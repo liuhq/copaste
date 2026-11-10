@@ -2,13 +2,14 @@ import { Link } from "react-router"
 
 import tw from "~/lib/tw"
 
-type Variant = "primary" | "secondary"
+type Variant = "primary" | "secondary" | "dangerous"
 
 const getBaseStyle = (variant: Variant) =>
   tw(
     "flex items-center gap-2 rounded pt-1 pr-2 pb-1 pl-2",
     variant === "primary" && "bg-primary text-pure-white",
     variant === "secondary" && "bg-transparent",
+    variant === "dangerous" && "bg-red text-pure-white",
   )
 
 interface ButtonProps extends React.ComponentPropsWithoutRef<"button"> {
