@@ -1,6 +1,7 @@
+import { RiLoginBoxLine, RiLogoutBoxRLine } from "@remixicon/react"
 import { Link, useFetcher } from "react-router"
 
-import { Button } from "~/components/button"
+import { Button, ButtonLink } from "~/components/button"
 
 const DEFAULT_NAME = "copaste user"
 
@@ -18,22 +19,33 @@ export default function Header({ authentication, displayName }: HeaderProps) {
       <div>
         <Link to="/">Copaste</Link>
       </div>
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-2">
         {authentication ? (
           <>
+            <ButtonLink variant="secondary" to="/list" className="hover:text-primary">
+              My pastes
+            </ButtonLink>
             <span>{name}</span>
             <fetcher.Form method="post" action="/auth/logout">
-              <Button variant="secondary" type="submit">
-                Logout
-              </Button>
+              <Button
+                variant="secondary"
+                type="submit"
+                icon={<RiLogoutBoxRLine size={20} />}
+                className="hover:text-red"
+              />
             </fetcher.Form>
           </>
         ) : (
           <>
-            <fetcher.Form method="post" action="/auth/login">
+            <fetcher.Form
+              method="post"
+              action="/auth/login"
+              className="flex items-center hover:text-primary"
+            >
               <Button variant="secondary" type="submit">
-                Login
+                Log in
               </Button>
+              <Button variant="secondary" type="submit" icon={<RiLoginBoxLine size={20} />} />
             </fetcher.Form>
           </>
         )}
