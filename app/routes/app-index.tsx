@@ -44,7 +44,7 @@ export default function AppIndex({ loaderData, actionData }: Route.ComponentProp
       <Form method="post" ref={formRef} className="flex w-full flex-col gap-1 self-center">
         <div className="flex gap-2">
           <input
-            className="h-12 grow rounded bg-white px-4 text-3xl"
+            className="h-12 min-w-0 shrink grow rounded bg-white px-4 text-3xl"
             name="slug"
             id="input-paste_id"
             placeholder="Enter the paste id..."
@@ -56,9 +56,9 @@ export default function AppIndex({ loaderData, actionData }: Route.ComponentProp
             <ButtonLink
               variant="secondary"
               to="/w"
-              className="border-2 border-primary font-bold text-primary hover:bg-primary hover:text-pure-white"
+              className="border-2 border-primary font-bold text-primary hover:bg-primary"
             >
-              Create a new paste
+              Create
             </ButtonLink>
           )}
         </div>
