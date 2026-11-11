@@ -1,8 +1,9 @@
-import { RiClipboardFill, RiMore2Fill } from "@remixicon/react"
+import { RiCheckboxCircleFill, RiClipboardFill, RiMore2Fill } from "@remixicon/react"
 import { useEffect, useRef, useState } from "react"
 import { redirect, useFetcher } from "react-router"
 
 import { Button, ButtonLink } from "~/components/button"
+import Dialog from "~/components/dialog"
 import { deletePasteByOwner, listActivePastesByOwner } from "~/db/dao/pastes.server"
 import { getSessionUserID } from "~/lib/auth/session.server"
 import { isString } from "~/lib/predicate"
@@ -64,10 +65,10 @@ interface EntryProps extends React.ComponentPropsWithoutRef<"li"> {
   slug: string
   pasteTitle: string | null
   expiresAt: Date | null
+  onDelete: (slug: string) => void
 }
 
-const Entry = ({ slug, pasteTitle, expiresAt, ...props }: EntryProps) => {
-  const fetcher = useFetcher()
+const Entry = ({ slug, pasteTitle, expiresAt, onDelete, ...props }: EntryProps) => {
   const [copied, setCopied] = useState(false)
   const [open, setOpen] = useState(false)
   const operatorRef = useRef<HTMLDivElement>(null)
@@ -113,26 +114,21 @@ const Entry = ({ slug, pasteTitle, expiresAt, ...props }: EntryProps) => {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleDeleteClick = async () => {
-    await fetcher.submit({ slug }, { method: "post" })
-  }
-
   return (
     <li className="flex h-8 justify-between gap-4" {...props}>
-      <div className="relative flex min-w-0 items-center gap-2">
+      <div className="flex min-w-0 items-center gap-2">
         <button
           type="button"
-          className="flex shrink-0 items-center gap-1 rounded pr-2 pl-2 font-mono text-xl text-primary hover:bg-primary hover:text-pure-white"
+          className="group flex shrink-0 items-center gap-1 rounded pr-2 pl-2 font-mono text-xl hover:bg-primary hover:text-pure-white"
           onClick={handleCopyClick}
         >
-          <RiClipboardFill size={18} />
+          {copied ? (
+            <RiCheckboxCircleFill size={18} className="text-primary group-hover:text-pure-white" />
+          ) : (
+            <RiClipboardFill size={18} className="text-primary group-hover:text-pure-white" />
+          )}
           {slug}
         </button>
-        {copied && (
-          <div className="absolute top-0 right-0 z-10 h-8 rounded bg-pure-white px-2 shadow-md">
-            Copied!
-          </div>
-        )}
         <div className="hidden truncate text-sm text-mid-black md:block">
           {pasteTitle ?? "(no title)"}
         </div>
@@ -158,12 +154,7 @@ const Entry = ({ slug, pasteTitle, expiresAt, ...props }: EntryProps) => {
             <ButtonLink variant="primary" to={`/w/${slug}`} className="justify-center">
               Edit
             </ButtonLink>
-            <Button
-              variant="dangerous"
-              className="justify-center"
-              onClick={handleDeleteClick}
-              disabled={fetcher.state !== "idle"}
-            >
+            <Button variant="dangerous" className="justify-center" onClick={() => onDelete(slug)}>
               Delete
             </Button>
           </div>
@@ -174,13 +165,57 @@ const Entry = ({ slug, pasteTitle, expiresAt, ...props }: EntryProps) => {
 }
 
 export default function PastesList({ loaderData }: Route.ComponentProps) {
+  const [selected, setSelected] = useState<string | null>(null)
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const fetcher = useFetcher()
+
+  const handleDeleteClick = (slug: string) => {
+    setSelected(slug)
+    dialogRef.current?.showModal()
+  }
+
   return (
     <div>
       <ul className="flex flex-col gap-2">
         {loaderData.pastes.map((p) => (
-          <Entry key={p.slug} slug={p.slug} pasteTitle={p.title} expiresAt={p.expiresAt} />
+          <Entry
+            key={p.slug}
+            slug={p.slug}
+            pasteTitle={p.title}
+            expiresAt={p.expiresAt}
+            onDelete={handleDeleteClick}
+          />
         ))}
       </ul>
+
+      <Dialog
+        ref={dialogRef}
+        onClose={() => setSelected(null)}
+        dialogTitle="Delete paste?"
+        description={selected ?? ""}
+        buttons={[
+          <Button
+            key="close"
+            type="button"
+            variant="secondary"
+            onClick={() => dialogRef.current?.close()}
+          >
+            Close
+          </Button>,
+          <Button
+            key="delete"
+            type="button"
+            variant="dangerous"
+            disabled={!selected || fetcher.state !== "idle"}
+            onClick={async () => {
+              await fetcher.submit({ slug: selected }, { method: "post" })
+              dialogRef.current?.close()
+            }}
+          >
+            Confirm
+          </Button>,
+        ]}
+      />
     </div>
   )
 }
