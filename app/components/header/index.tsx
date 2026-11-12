@@ -37,15 +37,16 @@ export default function Header({ authentication, displayName }: HeaderProps) {
           </>
         ) : (
           <>
-            <fetcher.Form
-              method="post"
-              action="/auth/login"
-              className="flex items-center hover:text-primary"
-            >
-              <Button variant="secondary" type="submit">
+            <fetcher.Form method="post" action="/auth/login">
+              <Button
+                variant="secondary"
+                type="submit"
+                icon={<RiLoginBoxLine size={20} />}
+                iconPosition="right"
+                className="hover:text-primary"
+              >
                 Log in
               </Button>
-              <Button variant="secondary" type="submit" icon={<RiLoginBoxLine size={20} />} />
             </fetcher.Form>
           </>
         )}
