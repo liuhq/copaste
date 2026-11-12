@@ -1,3 +1,4 @@
+import { RiAddLine, RiArrowRightLine } from "@remixicon/react"
 import { useEffect, useRef } from "react"
 import { data, Form, redirect } from "react-router"
 
@@ -77,17 +78,22 @@ export default function AppIndex({ loaderData, actionData }: Route.ComponentProp
               id="input-paste_id"
               placeholder="Enter the paste id..."
             />
-            <Button variant="primary" type="submit">
-              View
-            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              icon={<RiArrowRightLine aria-hidden="true" className="w-8" />}
+              aria-label="View paste"
+              title="View paste"
+            />
+
             {loaderData.authentication && (
               <ButtonLink
-                variant="secondary"
+                variant="outline"
                 to="/w"
-                className="border-2 border-primary font-bold text-primary hover:bg-primary"
-              >
-                Create
-              </ButtonLink>
+                icon={<RiAddLine aria-hidden="true" className="w-8" />}
+                aria-label="Create paste"
+                title="Create paste"
+              />
             )}
           </div>
           <ErrorTip text={actionData?.error ? actionData.error : ""} />

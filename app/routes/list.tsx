@@ -1,4 +1,12 @@
-import { RiCheckboxCircleFill, RiClipboardFill, RiMore2Fill } from "@remixicon/react"
+import {
+  RiCheckboxCircleLine,
+  RiClipboardLine,
+  RiCloseLine,
+  RiDeleteBinLine,
+  RiEditLine,
+  RiEyeLine,
+  RiMore2Fill,
+} from "@remixicon/react"
 import { useEffect, useRef, useState } from "react"
 import { redirect, useFetcher } from "react-router"
 
@@ -127,11 +135,13 @@ const Entry = ({ slug, pasteTitle, expiresAt, onDelete, ...props }: EntryProps) 
           type="button"
           className="group flex shrink-0 items-center gap-1 rounded pr-2 pl-2 font-mono text-xl hover:bg-primary hover:text-pure-white"
           onClick={handleCopyClick}
+          aria-label="Copy paste id"
+          title="Copy paste id"
         >
           {copied ? (
-            <RiCheckboxCircleFill size={18} className="text-primary group-hover:text-pure-white" />
+            <RiCheckboxCircleLine size={18} className="text-primary group-hover:text-pure-white" />
           ) : (
-            <RiClipboardFill size={18} className="text-primary group-hover:text-pure-white" />
+            <RiClipboardLine size={18} className="text-primary group-hover:text-pure-white" />
           )}
           {slug}
         </button>
@@ -145,7 +155,7 @@ const Entry = ({ slug, pasteTitle, expiresAt, onDelete, ...props }: EntryProps) 
             ? "Never expire"
             : `Expires At: ${expiresAt?.toLocaleString(undefined, { hour12: false })}`}
         </div>
-        <div ref={operatorRef} className="relative flex shrink-0">
+        <div ref={operatorRef} className="relative flex shrink-0 self-stretch">
           <button
             type="button"
             className="rounded pr-1.5 pl-1.5 active:bg-white sm:hidden"
@@ -154,13 +164,34 @@ const Entry = ({ slug, pasteTitle, expiresAt, onDelete, ...props }: EntryProps) 
             <RiMore2Fill size={20} />
           </button>
           <div className={operatorPanelStyle}>
-            <ButtonLink variant="secondary" to={`/p/${slug}`} className="justify-center">
+            <ButtonLink
+              variant="secondary"
+              to={`/p/${slug}`}
+              className="self-stretch [&_span]:block [&_span]:sm:hidden"
+              icon={<RiEyeLine aria-hidden="true" size={18} />}
+              aria-label="View paste"
+              title="View paste"
+            >
               View
             </ButtonLink>
-            <ButtonLink variant="primary" to={`/w/${slug}`} className="justify-center">
+            <ButtonLink
+              variant="primary"
+              to={`/w/${slug}`}
+              className="self-stretch [&_span]:block [&_span]:sm:hidden"
+              icon={<RiEditLine aria-hidden="true" size={18} />}
+              aria-label="Edit paste"
+              title="Edit paste"
+            >
               Edit
             </ButtonLink>
-            <Button variant="dangerous" className="justify-center" onClick={() => onDelete(slug)}>
+            <Button
+              variant="dangerous"
+              className="self-stretch [&_span]:block [&_span]:sm:hidden"
+              onClick={() => onDelete(slug)}
+              icon={<RiDeleteBinLine aria-hidden="true" size={18} />}
+              aria-label="Delete paste"
+              title="Delete paste"
+            >
               Delete
             </Button>
           </div>
@@ -204,6 +235,7 @@ export default function PastesList({ loaderData }: Route.ComponentProps) {
             key="close"
             type="button"
             variant="secondary"
+            icon={<RiCloseLine aria-hidden="true" size={18} />}
             onClick={() => dialogRef.current?.close()}
           >
             Close
@@ -212,6 +244,7 @@ export default function PastesList({ loaderData }: Route.ComponentProps) {
             key="delete"
             type="button"
             variant="dangerous"
+            icon={<RiDeleteBinLine aria-hidden="true" size={18} />}
             disabled={!selected || fetcher.state !== "idle"}
             onClick={async () => {
               await fetcher.submit({ slug: selected }, { method: "post" })
