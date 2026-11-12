@@ -15,13 +15,22 @@ const getBaseStyle = (variant: Variant) =>
 interface ButtonProps extends React.ComponentPropsWithoutRef<"button"> {
   variant: Variant
   icon?: React.ReactElement
+  iconPosition?: "left" | "right"
 }
 
-export function Button({ variant, icon, children, className, ...props }: ButtonProps) {
+export function Button({
+  variant,
+  icon,
+  iconPosition = "left",
+  children,
+  className,
+  ...props
+}: ButtonProps) {
   return (
     <button className={tw(getBaseStyle(variant), className)} {...props}>
-      {icon}
-      <span>{children}</span>
+      {iconPosition === "left" && icon}
+      {children && <span>{children}</span>}
+      {iconPosition === "right" && icon}
     </button>
   )
 }
@@ -29,13 +38,22 @@ export function Button({ variant, icon, children, className, ...props }: ButtonP
 interface ButtonLinkProps extends React.ComponentPropsWithoutRef<typeof Link> {
   variant: Variant
   icon?: React.ReactElement
+  iconPosition?: "left" | "right"
 }
 
-export function ButtonLink({ variant, icon, children, className, ...props }: ButtonLinkProps) {
+export function ButtonLink({
+  variant,
+  icon,
+  iconPosition = "left",
+  children,
+  className,
+  ...props
+}: ButtonLinkProps) {
   return (
     <Link className={tw(getBaseStyle(variant), className)} {...props}>
-      {icon}
-      <span>{children}</span>
+      {iconPosition === "left" && icon}
+      {children && <span>{children}</span>}
+      {iconPosition === "right" && icon}
     </Link>
   )
 }
