@@ -12,10 +12,6 @@ type OIDCSessionData = {
   codeVerifier: string
 }
 
-type AuthSessionData = {
-  userID: number
-}
-
 export const oidcSessionStorage = createCookieSessionStorage<OIDCSessionData>({
   cookie: {
     name: "__copaste_oidc",
@@ -28,11 +24,31 @@ export const oidcSessionStorage = createCookieSessionStorage<OIDCSessionData>({
   },
 })
 
+type AuthSessionData = {
+  userID: number
+}
+
 export const authSessionStorage = createCookieSessionStorage<AuthSessionData>({
   cookie: {
     name: "__copaste_auth",
     httpOnly: true,
     maxAge: AUTH_SESSION_MAXAGE,
+    path: "/",
+    sameSite: "lax",
+    secrets: [secret],
+    secure: true,
+  },
+})
+
+type FlashSessionData = {
+  unauthenticated: boolean
+  notFoundPaste: boolean
+}
+
+export const flashSessionStorage = createCookieSessionStorage<FlashSessionData>({
+  cookie: {
+    name: "__copaste_flash",
+    httpOnly: true,
     path: "/",
     sameSite: "lax",
     secrets: [secret],
