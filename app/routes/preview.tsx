@@ -4,15 +4,22 @@ import { redirect } from "react-router"
 import { ButtonLink } from "~/components/button"
 import { countLines, Gutter } from "~/components/editor"
 import { findActivePasteBySlug } from "~/db/dao/pastes.server"
+import { flashSessionStorage } from "~/lib/auth/session.server"
 import { highlightContent, supportedLanguages } from "~/lib/highlight.server"
 
 import type { Route } from "./+types/preview"
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
   const paste = await findActivePasteBySlug(params.slug)
 
   if (!paste) {
-    throw redirect("/")
+    const flashSession = await flashSessionStorage.getSession(request.headers.get("Cookie"))
+    flashSession.flash("notFoundPaste", true)
+    throw redirect("/", {
+      headers: {
+        "Set-Cookie": await flashSessionStorage.commitSession(flashSession),
+      },
+    })
   }
 
   const { content, language, title, slug } = paste

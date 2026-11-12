@@ -5,7 +5,7 @@ import { redirect, useFetcher } from "react-router"
 import { Button, ButtonLink } from "~/components/button"
 import Dialog from "~/components/dialog"
 import { deletePasteByOwner, listActivePastesByOwner } from "~/db/dao/pastes.server"
-import { getSessionUserID } from "~/lib/auth/session.server"
+import { flashSessionStorage, getSessionUserID } from "~/lib/auth/session.server"
 import { isString } from "~/lib/predicate"
 import tw from "~/lib/tw"
 import { getPreviewURL } from "~/lib/url-builder"
@@ -19,7 +19,13 @@ export async function loader({ request, url }: Route.LoaderArgs) {
   const userID = await getSessionUserID(request)
 
   if (userID === null) {
-    throw redirect("/")
+    const flashSession = await flashSessionStorage.getSession(request.headers.get("Cookie"))
+    flashSession.flash("unauthenticated", true)
+    throw redirect("/", {
+      headers: {
+        "Set-Cookie": await flashSessionStorage.commitSession(flashSession),
+      },
+    })
   }
 
   const limit = url.searchParams.get("limit")

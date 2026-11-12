@@ -6,7 +6,7 @@ import { Button } from "~/components/button"
 import Editor from "~/components/editor"
 import ErrorTip from "~/components/error-tip"
 import { createPaste, findActivePasteBySlug, updatePasteBySlugOwner } from "~/db/dao/pastes.server"
-import { getSessionUserID } from "~/lib/auth/session.server"
+import { flashSessionStorage, getSessionUserID } from "~/lib/auth/session.server"
 import { isSupportedLanguage, supportedLanguages } from "~/lib/highlight.server"
 import tw from "~/lib/tw"
 
@@ -73,7 +73,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const userID = await getSessionUserID(request)
 
   if (userID === null) {
-    throw redirect("/")
+    const flashSession = await flashSessionStorage.getSession(request.headers.get("Cookie"))
+    flashSession.flash("unauthenticated", true)
+    throw redirect("/", {
+      headers: {
+        "Set-Cookie": await flashSessionStorage.commitSession(flashSession),
+      },
+    })
   }
 
   if (params.slug) {
