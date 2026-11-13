@@ -1,4 +1,4 @@
-import { RiInformation2Fill } from "@remixicon/react"
+import { RiInformation2Line } from "@remixicon/react"
 import { useEffect, useState } from "react"
 
 import tw from "~/lib/tw"
@@ -30,7 +30,7 @@ export default function Toast({ message, duration = 5000 }: ToastProps) {
         "flex items-center gap-2",
       )}
     >
-      <RiInformation2Fill size={18} />
+      <RiInformation2Line size={18} />
       {message}
     </output>
   )
