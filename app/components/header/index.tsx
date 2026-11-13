@@ -17,7 +17,9 @@ export default function Header({ authentication, displayName }: HeaderProps) {
   return (
     <header className="flex w-full items-center justify-between py-4">
       <div>
-        <Link to="/">Copaste</Link>
+        <Link to="/" className="hover:text-primary">
+          Copaste
+        </Link>
       </div>
       <div className="flex items-center justify-between gap-2">
         {authentication ? (
