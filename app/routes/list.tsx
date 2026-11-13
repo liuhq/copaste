@@ -6,6 +6,7 @@ import {
   RiEditLine,
   RiEyeLine,
   RiMore2Fill,
+  RiTimeLine,
 } from "@remixicon/react"
 import { useEffect, useRef, useState } from "react"
 import { redirect, useFetcher } from "react-router"
@@ -151,9 +152,12 @@ const Entry = ({ slug, pasteTitle, expiresAt, onDelete, ...props }: EntryProps) 
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <div className="shrink-0 text-mid-black">
-          {expiresAt === null
-            ? "Never expire"
-            : `Expires At: ${expiresAt?.toLocaleString(undefined, { hour12: false })}`}
+          {expiresAt && (
+            <div className="flex items-center gap-1" aria-label="Expiration" title="Expiration">
+              <RiTimeLine aria-hidden="true" size={18} />
+              {`${expiresAt?.toLocaleString(undefined, { hour12: false })}`}
+            </div>
+          )}
         </div>
         <div ref={operatorRef} className="relative flex shrink-0 self-stretch">
           <button

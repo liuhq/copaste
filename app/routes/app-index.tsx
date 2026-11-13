@@ -73,10 +73,11 @@ export default function AppIndex({ loaderData, actionData }: Route.ComponentProp
         <Form method="post" ref={formRef} className="flex w-full flex-col gap-1 self-center">
           <div className="flex gap-2">
             <input
-              className="h-12 min-w-0 shrink grow rounded bg-white px-4 text-3xl"
+              className="h-12 min-w-0 shrink grow rounded bg-white px-4 text-3xl placeholder:text-primary/75"
               name="slug"
               id="input-paste_id"
               placeholder="Enter the paste id..."
+              autoComplete="off"
             />
             <Button
               variant="primary"

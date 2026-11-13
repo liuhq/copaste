@@ -1,4 +1,4 @@
-import { RiMore2Fill } from "@remixicon/react"
+import { RiAddFill, RiCodeSSlashLine, RiMore2Fill, RiSave3Fill, RiTimeLine } from "@remixicon/react"
 import { useEffect, useRef, useState } from "react"
 import { Form, redirect } from "react-router"
 
@@ -19,14 +19,6 @@ const expiresAtName = "copaste_edit_expires_at"
 const titleName = "copaste_edit_title"
 
 const durations = {
-  keep: {
-    name: "Keep",
-    value: 0,
-  },
-  never: {
-    name: "Never",
-    value: 0,
-  },
   "15m": {
     name: "15 minutes",
     value: 1_000 * 60 * 15,
@@ -46,6 +38,14 @@ const durations = {
   "30d": {
     name: "30 day",
     value: 1_000 * 60 * 60 * 24 * 30,
+  },
+  never: {
+    name: "Never",
+    value: 0,
+  },
+  keep: {
+    name: "Keep",
+    value: 0,
   },
 } as const
 
@@ -155,15 +155,13 @@ export async function action({
 }
 
 interface SelectProps extends React.ComponentPropsWithoutRef<"select"> {
-  text: string
+  text: React.ReactElement | string
 }
 
 const Select = ({ text, children, id, className, ...props }: SelectProps) => {
   return (
-    <div>
-      <label htmlFor={id} className="mr-2">
-        {text}
-      </label>
+    <div className="flex items-center gap-2">
+      <label htmlFor={id}>{text}</label>
       <select id={id} {...props} className={tw("rounded bg-white p-1", className)}>
         {children}
       </select>
@@ -228,7 +226,7 @@ const Bar = ({ language, expiresAt, title, ...props }: BarProps) => {
         </button>
         <div className={optionsPanelStyle}>
           <Select
-            text="Language"
+            text={<RiCodeSSlashLine size={18} />}
             id={languageName}
             name={languageName}
             defaultValue={language ?? "plaintext"}
@@ -240,7 +238,7 @@ const Bar = ({ language, expiresAt, title, ...props }: BarProps) => {
               </option>
             ))}
           </Select>
-          <Select text="Expires at" id={expiresAtName} name={expiresAtName}>
+          <Select text={<RiTimeLine size={18} />} id={expiresAtName} name={expiresAtName}>
             {!props.isNew && expiresAt !== undefined && (
               <option value="keep">
                 {isNever ? "Never" : expiresAt.toLocaleString(undefined, { hour12: false })}
@@ -262,9 +260,22 @@ const Bar = ({ language, expiresAt, title, ...props }: BarProps) => {
           name={titleName}
           defaultValue={title ?? ""}
           placeholder="(no title)"
-          className="max-w-1/2 min-w-0 flex-1 bg-white px-2 transition-all"
+          className="max-w-1/2 min-w-0 flex-1 bg-white px-2 transition-all placeholder:text-primary/75"
+          aria-label="Enter paste title"
+          title="Enter paste title"
+          autoComplete="off"
         />
-        <Button variant="primary" type="submit">
+        <Button
+          variant="primary"
+          type="submit"
+          icon={
+            props.isNew ? (
+              <RiAddFill aria-hidden="true" size={18} />
+            ) : (
+              <RiSave3Fill aria-hidden="true" size={18} />
+            )
+          }
+        >
           {props.isNew ? "Create" : "Update"}
         </Button>
       </div>

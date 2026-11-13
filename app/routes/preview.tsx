@@ -47,9 +47,14 @@ export default function Preview({
           <h2 className="font-bold wrap-anywhere">{title}</h2>
         </div>
 
-        <ButtonLink to={`/w/${slug}`} variant="primary" icon={<RiPencilFill size={20} />}>
-          Edit
-        </ButtonLink>
+        <ButtonLink
+          to={`/w/${slug}`}
+          variant="secondary"
+          className="h-8"
+          icon={<RiPencilFill aria-hidden="true" size={18} />}
+          aria-label="Edit paste"
+          title="Edit paste"
+        />
       </header>
       <div className="flex flex-1 gap-1 overflow-auto font-mono text-base/8">
         <Gutter lineCount={lineCount} />
