@@ -69,7 +69,7 @@ export default function AppIndex({ loaderData, actionData }: Route.ComponentProp
       {loaderData.flash.notFoundPaste && (
         <Toast key="notFoundPaste" message="The paste isn't exist." />
       )}
-      <div className="flex flex-col gap-16">
+      <div className="flex flex-col gap-4">
         <Form method="post" ref={formRef} className="flex w-full flex-col gap-1 self-center">
           <div className="flex gap-2">
             <input

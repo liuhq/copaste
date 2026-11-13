@@ -26,8 +26,13 @@ export async function loader({
 
 export default function AppLayout({ loaderData }: Route.ComponentProps) {
   const pathname = useLocation().pathname
+  const isHome = pathname === "/"
   const isEdit = pathname === "/w" || pathname.startsWith("/w/")
-  const wrapperStyle = tw("flex flex-col", isEdit ? "h-dvh overflow-hidden" : "min-h-svh")
+  const wrapperStyle = tw(
+    "flex flex-col",
+    isHome && "mx-auto w-full max-w-4xl",
+    isEdit ? "h-dvh overflow-hidden" : "min-h-svh",
+  )
 
   return (
     <div className={wrapperStyle}>
