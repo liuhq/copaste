@@ -41,7 +41,6 @@ export default function Editor({ name, defaultValue = "" }: EditorProps) {
           onInput={handleInput}
           spellCheck="false"
           wrap="off"
-          required
         />
       </div>
     </div>
