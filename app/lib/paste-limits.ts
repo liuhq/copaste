@@ -1,0 +1,2 @@
+export const MAX_TITLE_CHARACTERS = 150
+export const MAX_CONTENT_BYTES = 50 * 1024 * 1024

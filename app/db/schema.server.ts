@@ -1,6 +1,8 @@
 import { sql, isNotNull } from "drizzle-orm"
 import { sqliteTable, text, integer, index, uniqueIndex, check } from "drizzle-orm/sqlite-core"
 
+import { MAX_CONTENT_BYTES, MAX_TITLE_CHARACTERS } from "~/lib/paste-limits"
+
 const baseColumns = (autoIncrement = false) => ({
   ID: integer("id").primaryKey({ autoIncrement }),
   createdAt: integer("created_at", { mode: "timestamp" })
@@ -41,6 +43,14 @@ export const pastesTable = sqliteTable(
   (t) => [
     index("pastes_owner_created_idx").on(t.ownerID, t.createdAt, t.ID),
     index("pastes_expires_at_idx").on(t.expiresAt).where(isNotNull(t.expiresAt)),
+    check(
+      "pastes_title_length_check",
+      sql`${t.title} IS NULL OR (length(${t.title}) <= ${sql.raw(String(MAX_TITLE_CHARACTERS))} AND instr(${t.title}, char(0)) = 0)`,
+    ),
+    check(
+      "pastes_content_size_check",
+      sql`length(CAST(${t.content} AS BLOB)) <= ${sql.raw(String(MAX_CONTENT_BYTES))}`,
+    ),
     check(
       `pastes_expires_at_check`,
       sql`${t.expiresAt} IS NULL OR ${t.expiresAt} > ${t.createdAt}`,

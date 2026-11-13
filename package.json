@@ -11,9 +11,8 @@
     "format:check": "oxfmt --check .",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
-    "drizzle:push": "drizzle-kit push",
-    "drizzle:generate": "drizzle-kit push",
-    "drizzle:migrate": "drizzle-kit push",
+    "drizzle:generate": "drizzle-kit generate",
+    "drizzle:migrate": "drizzle-kit migrate",
     "sqlite": "sqlite3 -readonly copaste.db"
   },
   "dependencies": {
