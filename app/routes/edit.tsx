@@ -1,10 +1,10 @@
 import { RiAddFill, RiCodeSSlashLine, RiMore2Fill, RiSave3Fill, RiTimeLine } from "@remixicon/react"
 import { useEffect, useRef, useState } from "react"
-import { Form, redirect } from "react-router"
+import { data, Form, redirect } from "react-router"
 
 import { Button } from "~/components/button"
 import Editor from "~/components/editor"
-import ErrorTip from "~/components/error-tip"
+import Toast from "~/components/toast"
 import { createPaste, findActivePasteBySlug, updatePasteBySlugOwner } from "~/db/dao/pastes.server"
 import { flashSessionStorage, getSessionUserID } from "~/lib/auth/session.server"
 import { isSupportedLanguage, supportedLanguages } from "~/lib/highlight.server"
@@ -70,10 +70,10 @@ const isExpiresAtValue = (value: unknown): value is Duration => {
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
+  const flashSession = await flashSessionStorage.getSession(request.headers.get("Cookie"))
   const userID = await getSessionUserID(request)
 
   if (userID === null) {
-    const flashSession = await flashSessionStorage.getSession(request.headers.get("Cookie"))
     flashSession.flash("unauthenticated", true)
     throw redirect("/", {
       headers: {
@@ -82,25 +82,49 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     })
   }
 
+  const cannotEditPaste = flashSession.get("cannotEditPaste") ?? false
+
   if (params.slug) {
     const paste = await findActivePasteBySlug(params.slug)
 
-    if (!paste) {
-      throw redirect("/w")
+    if (!paste || paste.ownerID !== userID) {
+      flashSession.flash("cannotEditPaste", true)
+
+      throw redirect("/w", {
+        headers: {
+          "Set-Cookie": await flashSessionStorage.commitSession(flashSession),
+        },
+      })
     }
 
     const { content, expiresAt, language, title, slug } = paste
 
-    return {
-      paste: { content, expiresAt, language, title, slug },
-      supportedLanguages,
-    }
+    return data(
+      {
+        paste: { content, expiresAt, language, title, slug },
+        supportedLanguages,
+        cannotEditPaste,
+      },
+      {
+        headers: {
+          "Set-Cookie": await flashSessionStorage.commitSession(flashSession),
+        },
+      },
+    )
   }
 
-  return {
-    paste: null,
-    supportedLanguages,
-  }
+  return data(
+    {
+      paste: null,
+      supportedLanguages,
+      cannotEditPaste,
+    },
+    {
+      headers: {
+        "Set-Cookie": await flashSessionStorage.commitSession(flashSession),
+      },
+    },
+  )
 }
 
 export async function action({
@@ -119,6 +143,9 @@ export async function action({
   const language = formData.get(languageName)?.toString()
   const expiresAt = formData.get(expiresAtName)?.toString()
   const title = formData.get(titleName)?.toString()
+
+  // TODO: Validate title against the 150-character limit and reject null characters.
+  // TODO: Validate content against the 50 MiB UTF-8 byte limit before writing to the database.
 
   if (!content || content.trim() === "") {
     return { type: "paste", message: "Content cannot be empty." }
@@ -149,6 +176,10 @@ export async function action({
       title,
       ...getExpiresAtDate(expiresAt),
     })
+  }
+
+  if (!paste) {
+    return { type: "paste", message: "Paste not found or unavailable for editing." }
   }
 
   return redirect(`/p/${paste.slug}`)
@@ -287,17 +318,23 @@ export default function Edit({ loaderData, actionData }: Route.ComponentProps) {
   const { paste } = loaderData
 
   return (
-    <Form method="post" className="flex min-h-0 flex-1 flex-col" key={paste?.slug ?? newEditName}>
-      <Bar
-        language={paste?.language}
-        expiresAt={paste?.expiresAt}
-        title={paste?.title}
-        isNew={!paste}
-        supportedLanguages={loaderData.supportedLanguages}
-      />
-      {actionData?.type && actionData.type === "paste" && <ErrorTip text={actionData.message} />}
-      <div className="mt-2 border-b border-white" />
-      <Editor name={contentName} defaultValue={paste?.content} />
-    </Form>
+    <>
+      {loaderData.cannotEditPaste && (
+        <Toast message="Paste not found or unavailable for editing." />
+      )}
+      {/* FIX: Show the Toast again when a repeated submission fails after it has disappeared. */}
+      {actionData?.type === "paste" && <Toast message={actionData.message} />}
+      <Form method="post" className="flex min-h-0 flex-1 flex-col" key={paste?.slug ?? newEditName}>
+        <Bar
+          language={paste?.language}
+          expiresAt={paste?.expiresAt}
+          title={paste?.title}
+          isNew={!paste}
+          supportedLanguages={loaderData.supportedLanguages}
+        />
+        <div className="mt-2 border-b border-white" />
+        <Editor name={contentName} defaultValue={paste?.content} />
+      </Form>
+    </>
   )
 }

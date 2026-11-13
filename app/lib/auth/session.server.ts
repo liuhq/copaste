@@ -43,6 +43,7 @@ export const authSessionStorage = createCookieSessionStorage<AuthSessionData>({
 type FlashSessionData = {
   unauthenticated: boolean
   notFoundPaste: boolean
+  cannotEditPaste: boolean
 }
 
 export const flashSessionStorage = createCookieSessionStorage<FlashSessionData>({
